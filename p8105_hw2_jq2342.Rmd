@@ -115,10 +115,10 @@ unemp_data=
 ```
 
 ```{r merge 3 df}
-pols_snp<- merge(pols_data,snp_data,by=c("year", "month"))
-pols_snp_unemp <- merge(pols_snp,unemp_data,by=c("year", "month"))
+pols_snp= bind_rows(pols_data,snp_data,by=c("year", "month"))
+pols_snp_unemp=merge(pols_snp,unemp_data,by=c("year", "month"))
 ```
-
+**Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).**
 
 
 
