@@ -1,12 +1,13 @@
 ---
-title: "p8105_hw2_jq2342.Rmd"
-author: "Junyu Qi"
+title: "Homework 2.Rmd"
+author: "Junyu Qi jq2342"
 date: "2022-09-28"
 output: github_document
 ---
-##Problem 1
+#Problem 1
 ```{r}
 library(tidyverse)
+library(readxl)
 
 transit_data=
 read_csv("./Transit.csv", col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>%
@@ -51,7 +52,9 @@ transit_data %>%
   distinct
 ```
 
-##Problem 2
+#Problem 2
+
+##To clean Mr. Trash Wheel.xlsx
 ```{r clean Mr.Trash Wheel}
 Trash_data=
   readxl::read_excel("./Trash Wheel Collection Data.xlsx", sheet= "Mr. Trash Wheel" ,range="A2:N549") %>%
@@ -64,6 +67,7 @@ Trash_tidy=
   
 ```
 
+###To clean Professor. Trash Wheel.xlsx
 ```{r clean Professor.Trash Wheel}
 Trash2_data=
   readxl::read_excel("./Trash Wheel Collection Data.xlsx", sheet= "Professor Trash Wheel", range="A2:M97" ) %>%
@@ -75,6 +79,7 @@ Trash2_tidy=
   mutate(trash_name="PROF", year=as.integer(year))  
 ```
 
+###To combine Mr. Trash Wheel and Professor. Trash Wheel 
 ```{r combine two df}
 Trash_combined <- bind_rows(Trash_tidy, Trash2_tidy)
 ```
@@ -87,7 +92,7 @@ pols_data=
   read_csv("./pols-month.csv") %>%
   janitor:: clean_names() %>%                              
   separate (mon, into =c("year", "month", "day"), sep='-') %>%
-  mutate(month=month.abb[as.numeric(month)],president=ifelse(prez_gop> 0, "republican","democratic")) %>%
+  mutate(month=month.abb[as.numeric(month)],year=as.integer(year),president=ifelse(prez_gop> 0, "republican","democratic")) %>%
   select(-prez_gop,-prez_dem, -day)
 ```
 
@@ -115,8 +120,9 @@ unemp_data=
 ```
 
 ```{r merge 3 df}
-pols_snp= bind_rows(pols_data,snp_data,by=c("year", "month"))
-pols_snp_unemp=merge(pols_snp,unemp_data,by=c("year", "month"))
+
+pols_snp= left_join(pols_data,snp_data,by=c("year", "month"))
+pols_snp_unemp=left_join(pols_snp,unemp_data,by=c("year", "month"))
 ```
 **Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).**
 
