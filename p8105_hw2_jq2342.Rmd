@@ -1,0 +1,135 @@
+---
+title: "p8105_hw2_jq2342.Rmd"
+author: "Junyu Qi"
+date: "2022-09-28"
+output: github_document
+---
+##Problem 1
+```{r}
+library(tidyverse)
+
+transit_data=
+read_csv("./Transit.csv", col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>%
+  janitor:: clean_names() %>%
+  select(line, station_name, station_latitude, station_longitude,   (route1:route11), entry, vending, entrance_type, ada) %>%
+  mutate(
+    entry=recode(entry, `YES` = TRUE, `NO` = FALSE))  
+```
+**The transit dataset contains 1868 observation and 19 variables including: "line", "station_name", "station_latitude", "station_longitude", "route1:11",  "entry", "vending"     "entrance_type", "ada"**  
+
+**For the data cleaning, I did the data name cleaning, dropped the unnecessary variables and convert the character variable "entry" to logical variable. The data is not yet tidied because there are repeatative observations in the dataframe**
+
+```{r}
+distinct (transit_data,line, station_name)
+```
+**There are 465 distinct stations**
+```{r}
+filter(transit_data, ada==TRUE)
+```
+**There are 458 stations ADA compliant**
+```{r}
+filter(transit_data, vending=="NO" & entry==TRUE)
+```
+**59 out of 465 of station entrances / exits without vending allow entrance**
+```{r}
+transit_data %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_num",
+    values_to = "route") %>% 
+  filter(route == "A") %>% 
+  select(station_name, line) %>% 
+  distinct
+
+transit_data %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_num",
+    values_to = "route") %>% 
+  filter(route == "A", ada == TRUE) %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+
+##Problem 2
+```{r clean Mr.Trash Wheel}
+Trash_data=
+  readxl::read_excel("./Trash Wheel Collection Data.xlsx", sheet= "Mr. Trash Wheel" ,range="A2:N549") %>%
+    janitor:: clean_names() 
+
+Trash_tidy=
+  select(Trash_data, dumpster:homes_powered) %>% 
+  drop_na(dumpster) %>%
+ mutate(sports_balls = as.integer(sports_balls), trash_name="MR", year=as.integer(year))  
+  
+```
+
+```{r clean Professor.Trash Wheel}
+Trash2_data=
+  readxl::read_excel("./Trash Wheel Collection Data.xlsx", sheet= "Professor Trash Wheel", range="A2:M97" ) %>%
+    janitor:: clean_names()
+
+Trash2_tidy=
+  select(Trash2_data, dumpster:homes_powered) %>% 
+  drop_na(dumpster) %>%
+  mutate(trash_name="PROF", year=as.integer(year))  
+```
+
+```{r combine two df}
+Trash_combined <- bind_rows(Trash_tidy, Trash2_tidy)
+```
+**Be sure to note the number of observations in the resulting dataset, and give examples of key variables. For available data, what was the total weight of trash collected by Professor Trash Wheel? What was the total number of sports balls collected by Mr. Trash Wheel in 2020?**
+
+
+##Problem 3
+```{r clean pols}
+pols_data=
+  read_csv("./pols-month.csv") %>%
+  janitor:: clean_names() %>%                              
+  separate (mon, into =c("year", "month", "day"), sep='-') %>%
+  mutate(month=month.abb[as.numeric(month)],president=ifelse(prez_gop> 0, "republican","democratic")) %>%
+  select(-prez_gop,-prez_dem, -day)
+```
+
+```{r clean snp}
+snp_data=
+  read_csv("./snp.csv") %>%
+  janitor:: clean_names() %>%  
+  mutate(date=as.Date(date, "%m/%d/%Y")) %>%
+  separate (date, into =c("year", "month", "day"), sep='-') %>%
+  mutate(month=month.abb[as.numeric(month)], year=as.integer(year),year=ifelse(year>15, year+1900, year+2000))%>%
+  select(-day)
+```
+
+```{r clean unemployment}
+unemp_data=
+  read_csv("./unemployment.csv") %>%
+  janitor:: clean_names() %>% 
+  pivot_longer(
+    col=jan:dec,
+    names_to="month",
+    values_to="unemployment"
+  ) %>%
+   mutate(month=str_to_title(month), year=as.integer(year))
+
+```
+
+```{r merge 3 df}
+pols_snp<- merge(pols_data,snp_data,by=c("year", "month"))
+pols_snp_unemp <- merge(pols_snp,unemp_data,by=c("year", "month"))
+```
+
+
+
+
+
+
+
+
+'
+
+
+
+
+
+
